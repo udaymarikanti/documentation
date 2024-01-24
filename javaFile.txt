@@ -1,0 +1,107 @@
+Jar file 
+
+dockerfile 
+docker yml file 
+
+appliction properties
+
+
+
+=====>>>.how to make a jar file in spring boot application
+
+
+mvn package
+
+
+
+
+
+your-spring-boot-app/
+    └── src/
+    │   └── main/
+    │       ├── java/
+    │       │   └── com/
+    │       │       └── example/
+    │       │           └── yourapp/
+    │       │               ├── controllers/
+    │       │               │   └── YourController.java
+    │       │               ├── models/
+    │       │               │   └── YourModel.java
+    │       │               └── YourSpringBootApplication.java
+    │       └── resources/
+    │           └── application.properties
+    ├── Dockerfile
+    ├── pom.xml (or build.gradle for Gradle projects)
+    └── ...
+
+
+====>>>>>CREATE A DOCKER FILE
+-- INSTALL the plugind
+
+=======>>>>> APP PROPERTICE
+
+# Use a base image with Java 17 (openjdk:17-alpine)
+FROM openjdk:17-alpine
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the packaged Spring Boot application JAR file into the container
+COPY target/your-app-name.jar app.jar
+
+# Expose the port the application runs on
+EXPOSE 8080
+
+# Define the command to run your application when the container starts
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+
+=======>>>>>>CHANGING THE APPLICATION PROPETIES
+
+spring.appliction.name = student
+server.port=8082
+
+spring.jpa,hibernate.ddl-auto=update
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.username=root
+spring.datasource.password=root
+#spring.datasource.url=jdbc:mysql://localhost:3306/neoteric?useSSL=false&&verifyServerCertificate=false&allowPublicKeyRetrieval=true
+spring.datasource.url=jdbc:mysql://192.168.0.119:3306/neoteric
+
+
+# Log file location (if needed)
+logging.file.name=myapp.log
+
+# Console output (enabled by default)
+logging.level.root=INFO
+
+======>>>>>>CREATEING THE YML FILE
+
+---docker-compose.yml
+
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: neoteric
+    ports:
+      - "3306:3306"  # Expose MySQL port
+
+  spring-app:
+    build: .
+    container_name: spring_app
+    ports:
+      - "8082:8082"  # Expose Spring Boot app port
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/neoteric
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      - mysql  # Depend on the MySQL service
+
+
+
